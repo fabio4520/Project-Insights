@@ -1,4 +1,5 @@
 require "colorize"
+require "terminal-table"
 
 class Insight
 
@@ -11,19 +12,19 @@ class Insight
 
     until action == "exit"
       case action
-      when "1" then ""
-      when "2" then ""
-      when "3" then ""
-      when "4" then ""
-      when "5" then ""
-      when "6" then ""
-      when "7" then ""
-      when "8" then ""
-      when "9" then ""
-      when "10" then ""
+      when "1" then list_restaurants
+      when "2" then unique_dishes
+      when "3" then distribution
+      when "4" then visitors
+      when "5" then sum_sales
+      when "6" then expense
+      when "7" then average
+      when "8" then total_sales
+      when "9" then list_dishes
+      when "10" then fav_dish
       when "menu" then print_menu
         print ">"
-    action = gets.chomp
+        action = gets.chomp
       end
   end
 
@@ -31,7 +32,7 @@ class Insight
   private
   def print_welcome
     puts "Welcome to the Restaurants Insights!"
-    puts "Write 'menu'.orange at any moment to print the menu again and 'quit' to exit."
+    puts "Write 'menu' at any moment to print the menu again and 'quit' to exit."
   end
 
   def print_menu
@@ -49,6 +50,37 @@ class Insight
     puts "---"
   end
 end
+
+def list_restaurants
+end
+
+def unique_dishes 
+end
+
+def distribution
+end
+
+def visitors
+end
+  
+def sum_sales
+end
+
+def expense
+end
+
+def average
+end
+
+def total_sales
+end
+
+def list_dishes
+end
+
+def fav_dish
+end
+
 end
 
 app = Insight.new
