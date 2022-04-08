@@ -1,4 +1,5 @@
-require 
+require "colorize"
+
 class Insight
 
   def start
@@ -47,7 +48,7 @@ class Insight
     puts "10. The favorite dish for [age=number | gender=string | occupation=string | nationality=string]" 
     puts "---"
   end
-   
+end
 end
 
 app = Insight.new
