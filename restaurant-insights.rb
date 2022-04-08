@@ -70,7 +70,8 @@ class Insight
       FROM public.restaurants_clients
       JOIN public.restaurants as r ON r.id = restaurant_id
       GROUP BY r.name
-      ORDER BY COUNT(client_id) DESC;
+      ORDER BY COUNT(client_id) DESC
+      LIMIT 10;
       ])
 
     table = Terminal::Table.new
