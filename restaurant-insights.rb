@@ -2,7 +2,6 @@ require "colorize"
 require "terminal-table"
 
 class Insight
-
   def start
     print_welcome
     print_menu
@@ -25,14 +24,14 @@ class Insight
       when "menu" then print_menu
         print ">"
         action = gets.chomp
-      end
+    end
   end
-
+  end
 
   private
   def print_welcome
     puts "Welcome to the Restaurants Insights!"
-    puts "Write 'menu' at any moment to print the menu again and 'quit' to exit."
+    puts "Write 'menu'(:orange) at any moment to print the menu again and 'quit'(:orange) to exit."
   end
 
   def print_menu
@@ -49,39 +48,38 @@ class Insight
     puts "10. The favorite dish for [age=number | gender=string | occupation=string | nationality=string]" 
     puts "---"
   end
-end
 
-def list_restaurants
-end
+  def list_restaurants
+  end
 
-def unique_dishes 
-end
+  def unique_dishes 
+  end
 
-def distribution
-end
+  def distribution
+  end
 
-def visitors
-end
+  def visitors
+  end
   
-def sum_sales
+  def sum_sales
+  end
+
+  def expense
+  end
+
+  def average
+  end
+
+  def total_sales
+  end
+
+  def list_dishes
+  end
+
+  def fav_dish
+  end
+
 end
 
-def expense
-end
-
-def average
-end
-
-def total_sales
-end
-
-def list_dishes
-end
-
-def fav_dish
-end
-
-end
-
-app = Insight.new
+app =Insight.new
 app.start
