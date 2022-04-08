@@ -12,7 +12,7 @@ class Insight
     print_welcome
     print_menu
 
-    print ">"
+    print "> "
     action , param = gets.chomp.split
 
     until action == "exit"
@@ -28,9 +28,9 @@ class Insight
       when "9" then list_dishes
       when "10" then fav_dish
       when "menu" then print_menu
-        print ">"
-        action , param = gets.chomp.split
       end
+      print "> "
+      action, param = gets.chomp.split
     end
   end
 
@@ -72,7 +72,8 @@ class Insight
       GROUP BY r.name
       ORDER BY COUNT(client_id) DESC
       LIMIT 10;
-      ])
+    ])
+
     table = Terminal::Table.new
     table.title = "Top 10 restaurants by visitors"
     table.headings = result.fields
