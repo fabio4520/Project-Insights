@@ -1,3 +1,4 @@
+require 
 class Insight
 
   def start
@@ -27,10 +28,9 @@ class Insight
 
 
   private
-
   def print_welcome
     puts "Welcome to the Restaurants Insights!"
-    puts "Write 'menu' at any moment to print the menu again and 'quit' to exit."
+    puts "Write 'menu'.orange at any moment to print the menu again and 'quit' to exit."
   end
 
   def print_menu
@@ -42,13 +42,12 @@ class Insight
     puts "5. Top 10 restaurants by the sum of sales."
     puts "6. Top 10 restaurants by the average expense of their clients."
     puts "7. The average consumer expense group by [group=[age | gender | occupation | nationality]]"
-    puts "8. The total sales of all the restaurants group by month [order=[asc | desc]]""
+    puts "8. The total sales of all the restaurants group by month [order=[asc | desc]]"
     puts "9. The list of dishes and the restaurant where you can find it at a lower price."
     puts "10. The favorite dish for [age=number | gender=string | occupation=string | nationality=string]" 
     puts "---"
   end
-
-  
+   
 end
 
 app = Insight.new
