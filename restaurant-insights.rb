@@ -7,7 +7,7 @@ class Insight
     print_menu
 
     print ">"
-    action = gets.chomp
+    action , param = gets.chomp.split
 
     until action == "exit"
       case action
@@ -23,7 +23,7 @@ class Insight
       when "10" then fav_dish
       when "menu" then print_menu
         print ">"
-        action = gets.chomp
+        action , param = gets.chomp.split
     end
   end
   end
@@ -47,6 +47,7 @@ class Insight
     puts "9. The list of dishes and the restaurant where you can find it at a lower price."
     puts "10. The favorite dish for [age=number | gender=string | occupation=string | nationality=string]" 
     puts "---"
+    puts "Pick a number from the list and an [option] if necessary"
   end
 
   def list_restaurants
