@@ -30,8 +30,8 @@ class Insight
       when "menu" then print_menu
         print ">"
         action , param = gets.chomp.split
+      end
     end
-  end
   end
 
   private
@@ -73,7 +73,6 @@ class Insight
       ORDER BY COUNT(client_id) DESC
       LIMIT 10;
       ])
-
     table = Terminal::Table.new
     table.title = "Top 10 restaurants by visitors"
     table.headings = result.fields
