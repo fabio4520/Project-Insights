@@ -21,7 +21,7 @@ class Insight
       case action
       when "1" then list_restaurants(param)
       when "2" then unique_dishes
-      when "3" then distribution
+      when "3" then distribution(param)
       when "4" then visitors
       when "5" then sum_sales
       when "6" then expense
@@ -81,7 +81,17 @@ class Insight
     print_table(title, result.fields, result.values)
   end
 
-  def distribution
+  def distribution(param)
+    # param: group=value
+    _group, value = validate_input(param, ["age","gender","occupation","nationality"])
+    result = @db.exec(%[
+      SELECT #{value}, COUNT(#{value}), ROUND((COUNT(#{value}) * 100 / 499 ),2) AS Percentage 
+      FROM clients
+      GROUP BY #{value} ORDER BY #{value} ASC;
+    ])
+
+    title = "Number and distribution of Users by #{value}"
+    print_table(title, result.fields, result.values)
   end
 
   def visitors
@@ -154,7 +164,7 @@ class Insight
     # param = order=asc
     column, option = param.split("=")
     until options_arr.include?(option)
-      puts options_arr
+      puts "#{column}=#{options_arr.join(" | ")}"
       print "> "
       column, option = gets.chomp.split("=")
     end
