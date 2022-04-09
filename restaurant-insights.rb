@@ -113,6 +113,17 @@ class Insight
   end
   
   def sum_sales
+    result = @db. exec (%[
+      SELECT r.name AS restaurant_name, CONCAT('$',SUM(p.price_number)) total_sales 
+      FROM restaurants AS r
+      JOIN restaurants_dishes AS rd ON r.id = rd.restaurant_id
+      JOIN dishes AS d ON d.id = rd.dish_id
+      JOIN prices AS p ON d.id = p.dish_id
+      GROUP BY r.name ORDER BY total_sales DESC;
+    ])
+
+    title = "Top 10 restaurants by sales"
+    print_table(title, result.fields, result.values)
   end
 
   def expense
