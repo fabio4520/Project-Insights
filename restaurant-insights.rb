@@ -19,7 +19,7 @@ class Insight
       print "> "
       action , param = gets.chomp.split
       case action
-      when "1" then list_restaurants
+      when "1" then list_restaurants(param)
       when "2" then unique_dishes
       when "3" then distribution
       when "4" then visitors
@@ -58,7 +58,19 @@ class Insight
     puts "Pick a number from the list and an [option] if necessary"
   end
 
-  def list_restaurants
+  def list_restaurants(param)
+    value = nil
+    column, value = param.split("=") unless param.nil?
+    querie1 = %[SELECT r.name, r.category, r.city FROM restaurants AS r;]
+    querie2 = %[
+      SELECT r.name, r.category, r.city FROM restaurants AS r 
+      WHERE #{column} = '#{value}';
+    ]
+    result = @db.exec(
+      value.nil? ? querie1 : querie2
+    )
+    title = "List of restaurants"
+    print_table(title, result.fields, result.values)
   end
 
   def unique_dishes 
