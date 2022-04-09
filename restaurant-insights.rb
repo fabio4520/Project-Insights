@@ -1,4 +1,5 @@
 require "colorize"
+require "pg"
 require "terminal-table"
 require "pg"
 
@@ -33,7 +34,6 @@ class Insight
         print "> "
         action , param = gets.chomp.split
     end
-  end
   end
 
   private
@@ -97,6 +97,19 @@ class Insight
   end
 
   def visitors
+    result = @db. exec (%[SELECT r.name, COUNT(client_id) as visitors
+      FROM public.restaurants_clients
+      JOIN public.restaurants as r ON r.id = restaurant_id
+      GROUP BY r.name
+      ORDER BY COUNT(client_id) DESC
+      LIMIT 10;
+    ])
+
+    table = Terminal::Table.new
+    table.title = "Top 10 restaurants by visitors"
+    table.headings = result.fields
+    table.rows = result.values
+    puts table
   end
   
   def sum_sales
