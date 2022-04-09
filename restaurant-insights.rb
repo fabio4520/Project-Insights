@@ -91,10 +91,20 @@ class Insight
       JOIN prices AS p ON d.id = p.dish_id
       group by r.name order by total_sales #{order};
     ])
-
+    title = "Total Sales of all restaurants group by month"
+    print_table(title, result.fields, result.values)
   end
 
   def list_dishes
+    result = @db.exec(%[
+      SELECT d.name, MIN(p.price_number) FROM dishes AS d
+      JOIN restaurants_dishes AS rd ON rd.dish_id = d.id
+      JOIN restaurants AS r ON r.id = rd.restaurant_id
+      JOIN prices AS p ON d.id = p.dish_id
+      GROUP BY d.name;
+    ])
+    title = "Restaurants with the lower price for each dish"
+    print_table(title, result.fields, result.values)
   end
 
   def fav_dish
