@@ -85,7 +85,9 @@ class Insight
     # param: group=value
     _group, value = validate_input(param, ["age","gender","occupation","nationality"])
     result = @db.exec(%[
-      SELECT #{value}, COUNT(#{value}), ROUND((COUNT(#{value}) * 100 / 499 ),2) AS Percentage 
+      SELECT #{value}, 
+      COUNT(#{value}), 
+      CONCAT( ROUND(( COUNT(#{value}) * 100.0 / (select COUNT(*) from clients)),2), ' % ')
       FROM clients
       GROUP BY #{value} ORDER BY #{value} ASC;
     ])
