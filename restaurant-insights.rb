@@ -1,12 +1,20 @@
 require "colorize"
 require "terminal-table"
+require "pg"
+
+# require_relative "insert_data"
 
 class Insight
+
+  def initialize
+    @db = PG.connect(dbname: "insights")
+  end
+
   def start
     print_welcome
     print_menu
 
-    print ">"
+    print "> "
     action , param = gets.chomp.split
 
     until action == "exit"
@@ -22,7 +30,7 @@ class Insight
       when "9" then list_dishes
       when "10" then fav_dish
       when "menu" then print_menu
-        print ">"
+        print "> "
         action , param = gets.chomp.split
     end
   end
@@ -72,6 +80,18 @@ class Insight
   end
 
   def total_sales
+
+    order = validate_input("",["asc", "desc"])
+
+    result = @db.exec(%[
+      SELECT SUM(p.price_number) AS total_sales, r.name AS restaurant_name 
+      FROM restaurants AS r
+      JOIN restaurants_dishes AS rd ON r.id = rd.restaurant_id
+      JOIN dishes AS d ON d.id = rd.dish_id
+      JOIN prices AS p ON d.id = p.dish_id
+      group by r.name order by total_sales #{order};
+    ])
+
   end
 
   def list_dishes
@@ -79,6 +99,8 @@ class Insight
 
   def fav_dish
   end
+
+  
 
 end
 
