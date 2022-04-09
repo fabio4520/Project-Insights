@@ -100,7 +100,25 @@ class Insight
   def fav_dish
   end
 
-  
+  private
+  def validate_input(option, options)
+    until options.include?(option)
+      puts "order=[asc | desc]"
+      print "> "
+      answer = gets.chomp
+      _order, option = answer.split("=")
+    end
+    option
+  end
+
+  def print_table(title, headings, rows)
+    table = Terminal::Table.new
+    table.title = title
+    table.headings = headings
+    table.rows = rows
+    puts table
+  end
+
 
 end
 
