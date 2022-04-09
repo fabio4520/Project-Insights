@@ -12,12 +12,12 @@ class Insight
 
   def start
     print_welcome
-    print_menu
-
-    print "> "
-    action , param = gets.chomp.split
-
+    
+    action = ""
     until action == "exit"
+      print_menu
+      print "> "
+      action , param = gets.chomp.split
       case action
       when "1" then list_restaurants
       when "2" then unique_dishes
@@ -26,7 +26,7 @@ class Insight
       when "5" then sum_sales
       when "6" then expense
       when "7" then average
-      when "8" then total_sales
+      when "8" then total_sales(param)
       when "9" then list_dishes
       when "10" then fav_dish
       when "menu" then print_menu
@@ -79,9 +79,9 @@ class Insight
   def average
   end
 
-  def total_sales
-
-    order = validate_input("",["asc", "desc"])
+  def total_sales(param)
+    # param = order=asc
+    order = validate_input(param,["asc", "desc"])
 
     result = @db.exec(%[
       SELECT SUM(p.price_number) AS total_sales, r.name AS restaurant_name 
@@ -108,15 +108,17 @@ class Insight
   end
 
   def fav_dish
+
   end
 
   private
-  def validate_input(option, options)
-    until options.include?(option)
+  def validate_input(param, options_arr)
+    # param = order=asc
+    _order, option = param.split("=")
+    until options_arr.include?(option)
       puts "order=[asc | desc]"
       print "> "
-      answer = gets.chomp
-      _order, option = answer.split("=")
+      _order, option = gets.chomp.split("=")
     end
     option
   end
@@ -128,7 +130,6 @@ class Insight
     table.rows = rows
     puts table
   end
-
 
 end
 
