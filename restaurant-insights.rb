@@ -26,13 +26,14 @@ class Insight
       when "4" then visitors
       when "5" then sum_sales
       when "6" then expense
-      when "7" then average
+      when "7" then average(param)
       when "8" then total_sales(param)
       when "9" then list_dishes
       when "10" then fav_dish(param)
       when "menu" then print_menu
         print "> "
         action , param = gets.chomp.split
+      end
     end
   end
 
@@ -129,7 +130,19 @@ class Insight
   def expense
   end
 
-  def average
+  def average(param)
+    _group, value = validate_input(param, ["age","gender","occupation","nationality"])
+    result = @db.exec(%[
+      SELECT #{value}, ROUND(AVG(p.price_number),2) FROM clients AS c
+      LEFT JOIN restaurants_clients AS rc ON c.id = rc.client_id
+      LEFT JOIN restaurants AS r ON rc.restaurant_id = r.id
+      LEFT JOIN restaurants_dishes AS rd ON r.id = rd.restaurant_id
+      LEFT JOIN dishes AS d ON d.id = rd.dish_id
+      LEFT JOIN prices AS p ON d.id = p.dish_id
+      GROUP BY #{value} ;
+    ])
+    title = "Average consumer expenses"
+    print_table(title, result.fields, result.values)
   end
 
   def total_sales(param)
@@ -185,7 +198,6 @@ class Insight
 
   end
 
-  private
   def validate_input(param, options_arr)
     # param = order=asc
     column, option = param.split("=")

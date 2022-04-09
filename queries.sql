@@ -1,5 +1,19 @@
 -- . List of restaurants included in the research filter by ['' | category=string | city=string]
 
+select gender, ROUND(AVG(p.price_number),2) from clients as c
+join restaurants_clients as rc on c.id = rc.client_id
+join restaurants as r on rc.restaurant_id = r.id
+join restaurants_dishes as rd on r.id = rd.restaurant_id
+join dishes as d on d.id = rd.dish_id
+join prices as p on d.id = p.dish_id
+group by gender ;
+
+
+
+
+
+
+
 SELECT age, COUNT(age), concat( round(( count(age) * 100.0 / (select count(*) from clients)),2), ' % ')
 FROM clients
 GROUP BY age ORDER BY age ASC;
