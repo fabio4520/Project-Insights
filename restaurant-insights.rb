@@ -1,31 +1,39 @@
 require "colorize"
+require "pg"
 require "terminal-table"
+require "pg"
+
+# require_relative "insert_data"
 
 class Insight
+
+  def initialize
+    @db = PG.connect(dbname: "insights")
+  end
+
   def start
     print_welcome
-    print_menu
-
-    print ">"
-    action , param = gets.chomp.split
-
+    
+    action = ""
     until action == "exit"
+      print_menu
+      print "> "
+      action , param = gets.chomp.split
       case action
-      when "1" then list_restaurants
+      when "1" then list_restaurants(param)
       when "2" then unique_dishes
-      when "3" then distribution
+      when "3" then distribution(param)
       when "4" then visitors
       when "5" then sum_sales
       when "6" then expense
       when "7" then average
-      when "8" then total_sales
+      when "8" then total_sales(param)
       when "9" then list_dishes
-      when "10" then fav_dish
+      when "10" then fav_dish(param)
       when "menu" then print_menu
-        print ">"
+        print "> "
         action , param = gets.chomp.split
     end
-  end
   end
 
   private
@@ -50,16 +58,58 @@ class Insight
     puts "Pick a number from the list and an [option] if necessary"
   end
 
-  def list_restaurants
+  def list_restaurants(param)
+    value = nil
+    column, value = param.split("=") unless param.nil?
+    querie1 = %[SELECT r.name, r.category, r.city FROM restaurants AS r;]
+    querie2 = %[
+      SELECT r.name, r.category, r.city FROM restaurants AS r 
+      WHERE #{column} = '#{value}';
+    ]
+    result = @db.exec(
+      value.nil? ? querie1 : querie2
+    )
+    title = "List of restaurants"
+    print_table(title, result.fields, result.values)
   end
 
-  def unique_dishes 
+  def unique_dishes
+    result = @db.exec(%[
+      SELECT d.name FROM dishes as d group by d.name;
+    ])
+    title = "List of dishes"
+    print_table(title, result.fields, result.values)
   end
 
-  def distribution
+  def distribution(param)
+    # param: group=value
+    _group, value = validate_input(param, ["age","gender","occupation","nationality"])
+    result = @db.exec(%[
+      SELECT #{value}, 
+      COUNT(#{value}), 
+      CONCAT( ROUND(( COUNT(#{value}) * 100.0 / (select COUNT(*) from clients)),2), ' % ')
+      FROM clients
+      GROUP BY #{value} ORDER BY #{value} ASC;
+    ])
+
+    title = "Number and distribution of Users by #{value}"
+    print_table(title, result.fields, result.values)
   end
 
   def visitors
+    result = @db. exec (%[SELECT r.name, COUNT(client_id) as visitors
+      FROM public.restaurants_clients
+      JOIN public.restaurants as r ON r.id = restaurant_id
+      GROUP BY r.name
+      ORDER BY COUNT(client_id) DESC
+      LIMIT 10;
+    ])
+
+    table = Terminal::Table.new
+    table.title = "Top 10 restaurants by visitors"
+    table.headings = result.fields
+    table.rows = result.values
+    puts table
   end
   
   def sum_sales
@@ -71,13 +121,77 @@ class Insight
   def average
   end
 
-  def total_sales
+  def total_sales(param)
+    # param = order=asc
+    _column, order = validate_input(param,["asc", "desc"])
+
+    result = @db.exec(%[
+      SELECT CONCAT('$',SUM(p.price_number)) total_sales, r.name AS restaurant_name 
+      FROM restaurants AS r
+      JOIN restaurants_dishes AS rd ON r.id = rd.restaurant_id
+      JOIN dishes AS d ON d.id = rd.dish_id
+      JOIN prices AS p ON d.id = p.dish_id
+      group by r.name order by total_sales #{order};;
+    ])
+    title = "Total Sales of all restaurants group by month"
+    print_table(title, result.fields, result.values)
   end
 
   def list_dishes
+    result = @db.exec(%[
+      SELECT d.name, MIN(p.price_number) FROM dishes AS d
+      JOIN restaurants_dishes AS rd ON rd.dish_id = d.id
+      JOIN restaurants AS r ON r.id = rd.restaurant_id
+      JOIN prices AS p ON d.id = p.dish_id
+      GROUP BY d.name;
+    ])
+    title = "Restaurants with the lower price for each dish"
+    print_table(title, result.fields, result.values)
   end
 
-  def fav_dish
+  def fav_dish(param)
+    column_reference = {
+      "age" => "age",
+      "gender" => "gender",
+      "occupation" => "occupation",
+      "nacionality" => "nacionality"
+    }
+    # column, value = validate_input(param, column_reference.keys)
+    column, value = param.split("=")
+
+    result = @db.exec(%[
+      SELECT #{column}, d.name AS Dish FROM clients AS c
+      LEFT JOIN restaurants_clients AS rc ON rc.client_id = c.id
+      LEFT JOIN restaurants AS r ON r.id = rc.restaurant_id
+      LEFT JOIN restaurants_dishes AS rd ON r.id = rd.restaurant_id
+      join dishes AS d ON d.id = rd.dish_id
+      WHERE #{column} = '#{value}'
+      GROUP BY #{column}, d.name
+      ORDER BY count(d.name) DESC LIMIT 1;
+    ])
+    title = "Favorite dish for #{column}=#{value}"
+    print_table(title, result.fields, result.values)
+
+  end
+
+  private
+  def validate_input(param, options_arr)
+    # param = order=asc
+    column, option = param.split("=")
+    until options_arr.include?(option)
+      puts "#{column}=#{options_arr.join(" | ")}"
+      print "> "
+      column, option = gets.chomp.split("=")
+    end
+    return column, option
+  end
+
+  def print_table(title, headings, rows)
+    table = Terminal::Table.new
+    table.title = title
+    table.headings = headings
+    table.rows = rows
+    puts table
   end
 
 end
