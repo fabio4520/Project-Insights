@@ -84,12 +84,12 @@ class Insight
     _column, order = validate_input(param,["asc", "desc"])
 
     result = @db.exec(%[
-      SELECT SUM(p.price_number) AS total_sales, r.name AS restaurant_name 
+      SELECT CONCAT('$',SUM(p.price_number)) total_sales, r.name AS restaurant_name 
       FROM restaurants AS r
       JOIN restaurants_dishes AS rd ON r.id = rd.restaurant_id
       JOIN dishes AS d ON d.id = rd.dish_id
       JOIN prices AS p ON d.id = p.dish_id
-      group by r.name order by total_sales #{order};
+      group by r.name order by total_sales #{order};;
     ])
     title = "Total Sales of all restaurants group by month"
     print_table(title, result.fields, result.values)
