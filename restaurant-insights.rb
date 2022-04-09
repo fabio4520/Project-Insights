@@ -73,7 +73,12 @@ class Insight
     print_table(title, result.fields, result.values)
   end
 
-  def unique_dishes 
+  def unique_dishes
+    result = @db.exec(%[
+      SELECT d.name FROM dishes as d group by d.name;
+    ])
+    title = "List of dishes"
+    print_table(title, result.fields, result.values)
   end
 
   def distribution
