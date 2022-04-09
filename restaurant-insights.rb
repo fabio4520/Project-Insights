@@ -39,23 +39,23 @@ class Insight
   private
   def print_welcome
     puts "Welcome to the Restaurants Insights!"
-    puts "Write 'menu'(:orange) at any moment to print the menu again and 'quit'(:orange) to exit."
+    puts "Write 'menu'.colorize(orange) at any moment to print the menu again and 'quit'.colorize(orange) to exit."
   end
 
   def print_menu
     puts "---"
-    puts "1. List of restaurants included in the research filter by ['' | category=string | city=string]"
-    puts "2. List of unique dishes included in the research"
-    puts "3. Number and distribution (%) of clients by [group=[age | gender | occupation | nationality]]"
-    puts "4. Top 10 restaurants by the number of visitors."
-    puts "5. Top 10 restaurants by the sum of sales."
-    puts "6. Top 10 restaurants by the average expense of their clients."
-    puts "7. The average consumer expense group by [group=[age | gender | occupation | nationality]]"
-    puts "8. The total sales of all the restaurants group by month [order=[asc | desc]]"
-    puts "9. The list of dishes and the restaurant where you can find it at a lower price."
-    puts "10. The favorite dish for [age=number | gender=string | occupation=string | nationality=string]" 
+    puts "1..colorize(green) List of restaurants included in.colorize(blue) the research filter by ['' | category=string | city=string]"
+    puts "2..colorize(green) List of unique dishes included in.colorize(blue) the research"
+    puts "3..colorize(green) Number and distribution (%) of clients by [group=[age | gender | occupation | nationality]]"
+    puts "4..colorize(green) Top 10.colorize(green) restaurants by the number of visitors."
+    puts "5..colorize(green) Top 10.colorize(green) restaurants by the sum.colorize(yellow) of sales."
+    puts "6..colorize(green) Top 10.colorize(green) restaurants by the average expense of their clients."
+    puts "7..colorize(green) The average consumer expense group by [group=[age | gender | occupation | nationality]]"
+    puts "8..colorize(green) The total sales of all the restaurants group by month [order=[asc | desc]]"
+    puts "9..olorize(green) The list of dishes and the restaurant where you can find.colorize(yellow) it at a lower price."
+    puts "10..colorize(green) The favorite dish for.colorize(blue) [age=number | gender=string | occupation=string | nationality=string]" 
     puts "---"
-    puts "Pick a number from the list and an [option] if necessary"
+    puts "Pick a number from the list and an [option] if.colorize(blue) necessary"
   end
 
   def list_restaurants(param)
@@ -106,7 +106,7 @@ class Insight
     ])
 
     table = Terminal::Table.new
-    table.title = "Top 10 restaurants by visitors"
+    table.title = "Top 10.colorize(green) restaurants by visitors"
     table.headings = result.fields
     table.rows = result.values
     puts table
