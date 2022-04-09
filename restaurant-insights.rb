@@ -28,7 +28,7 @@ class Insight
       when "7" then average
       when "8" then total_sales(param)
       when "9" then list_dishes
-      when "10" then fav_dish
+      when "10" then fav_dish(param)
       when "menu" then print_menu
         print "> "
         action , param = gets.chomp.split
@@ -108,6 +108,27 @@ class Insight
   end
 
   def fav_dish(param)
+    column_reference = {
+      "age" => "age",
+      "gender" => "gender",
+      "occupation" => "occupation",
+      "nacionality" => "nacionality"
+    }
+    # column, value = validate_input(param, column_reference.keys)
+    column, value = param.split("=")
+
+    result = @db.exec(%[
+      SELECT #{column}, d.name AS Dish FROM clients AS c
+      LEFT JOIN restaurants_clients AS rc ON rc.client_id = c.id
+      LEFT JOIN restaurants AS r ON r.id = rc.restaurant_id
+      LEFT JOIN restaurants_dishes AS rd ON r.id = rd.restaurant_id
+      join dishes AS d ON d.id = rd.dish_id
+      WHERE #{column} = '#{value}'
+      GROUP BY #{column}, d.name
+      ORDER BY count(d.name) DESC LIMIT 1;
+    ])
+    title = "Favorite dish for #{column}=#{value}"
+    print_table(title, result.fields, result.values)
 
   end
 
@@ -116,11 +137,11 @@ class Insight
     # param = order=asc
     column, option = param.split("=")
     until options_arr.include?(option)
-      puts "order=[asc | desc]"
+      puts options_arr
       print "> "
       column, option = gets.chomp.split("=")
     end
-    column, option
+    return column, option
   end
 
   def print_table(title, headings, rows)
