@@ -81,7 +81,7 @@ class Insight
 
   def total_sales(param)
     # param = order=asc
-    order = validate_input(param,["asc", "desc"])
+    _column, order = validate_input(param,["asc", "desc"])
 
     result = @db.exec(%[
       SELECT SUM(p.price_number) AS total_sales, r.name AS restaurant_name 
@@ -107,20 +107,20 @@ class Insight
     print_table(title, result.fields, result.values)
   end
 
-  def fav_dish
+  def fav_dish(param)
 
   end
 
   private
   def validate_input(param, options_arr)
     # param = order=asc
-    _order, option = param.split("=")
+    column, option = param.split("=")
     until options_arr.include?(option)
       puts "order=[asc | desc]"
       print "> "
-      _order, option = gets.chomp.split("=")
+      column, option = gets.chomp.split("=")
     end
-    option
+    column, option
   end
 
   def print_table(title, headings, rows)
