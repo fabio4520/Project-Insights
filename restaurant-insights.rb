@@ -107,6 +107,18 @@ class Insight
     title = " Top 10 restaurants by visitors"
     print_table(title, result.fields, result.values)
   end
+  
+  def sum_sales
+    result = @db. exec (%[
+      select r.restaurant_name, sum(d.price) from restaurants_clients as rc
+      join restaurants as r on r.id = rc.restaurant_id
+      join dishes as d on rc.dish_id = d.id
+      group by r.restaurant_name order by sum(d.price) DESC;
+    ])
+
+    title = "Top 10 restaurants by sales"
+    print_table(title, result.fields, result.values)
+  end
 
   def validate_input(param, options_arr)
     column, option = param.split("=")
