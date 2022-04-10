@@ -150,12 +150,14 @@ class Insight
     _column, order = validate_input(param,["asc", "desc"])
 
     result = @db.exec(%[
-      SELECT CONCAT('$',SUM(p.price_number)) total_sales, r.name AS restaurant_name 
-      FROM restaurants AS r
-      JOIN restaurants_dishes AS rd ON r.id = rd.restaurant_id
-      JOIN dishes AS d ON d.id = rd.dish_id
-      JOIN prices AS p ON d.id = p.dish_id
-      group by r.name order by total_sales #{order};;
+      select extract( month from vd.visit_date) as month, sum(p.price_number) as Sales from visit_dates as vd
+      join clients as c on c.id = vd.client_id
+      join restaurants_clients as rc on c.id = rc.client_id
+      join restaurants as r on rc.restaurant_id = r.id
+      join restaurants_dishes as rd on r.id = rd.restaurant_id
+      join dishes as d on d.id = rd.dish_id
+      join prices as p on d.id = p.dish_id
+      group by month order by Sales #{order};
     ])
     title = "Total Sales of all restaurants group by month"
     print_table(title, result.fields, result.values)
@@ -163,11 +165,11 @@ class Insight
 
   def list_dishes
     result = @db.exec(%[
-      SELECT d.name, MIN(p.price_number) FROM dishes AS d
+      SELECT DISTINCT ON (d.name) d.name AS Dish, r.name , MIN(p.price_number) FROM dishes AS d
       JOIN restaurants_dishes AS rd ON rd.dish_id = d.id
       JOIN restaurants AS r ON r.id = rd.restaurant_id
       JOIN prices AS p ON d.id = p.dish_id
-      GROUP BY d.name;
+      GROUP BY d.name, r.name;
     ])
     title = "Restaurants with the lower price for each dish"
     print_table(title, result.fields, result.values)
