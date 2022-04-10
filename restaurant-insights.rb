@@ -119,6 +119,18 @@ class Insight
     title = "Top 10 restaurants by sales"
     print_table(title, result.fields, result.values)
   end
+  
+  def average(param)
+    _group, value = validate_input(param, ["age","gender","occupation","nationality"])
+    result = @db.exec(%[
+      select #{value}, round(avg(d.price), 2) as avg_expense from clients as c
+      join restaurants_clients as rc on rc.client_id = c.id
+      join dishes as d on d.id = rc.dish_id
+      group by #{value} order by #{value} asc;
+    ])
+    title = "Average consumer expenses"
+    print_table(title, result.fields, result.values)
+  end
 
   def validate_input(param, options_arr)
     column, option = param.split("=")
