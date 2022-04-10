@@ -89,7 +89,7 @@ class Insight
     result = @db.exec(%[
       SELECT #{value}, 
       COUNT(#{value}), 
-      CONCAT( ROUND(( COUNT(#{value}) * 100.0 / (select COUNT(*) from clients)),2), ' % ')
+      CONCAT( ROUND(( COUNT(#{value}) * 100.0 / (SELECT COUNT(*) FROM clients)),2), ' % ')
       FROM clients
       GROUP BY #{value} ORDER BY #{value} ASC;
     ])
@@ -97,6 +97,16 @@ class Insight
     print_table(title, result.fields, result.values)
   end
   
+  def visitors
+    result = @db. exec (%[
+      SELECT r.restaurant_name, COUNT(client_id) AS Visitors FROM restaurants_clients AS rc
+      JOIN restaurants AS r ON r.id = rc.restaurant_id
+      GROUP BY r.restaurant_name ORDER BY Visitors DESC LIMIT 10;
+      ])
+    title = " Top 10 restaurants by visitors"
+    print_table(title, result.fields, result.values)
+  end
+
   def validate_input(param, options_arr)
     column, option = param.split("=")
     until options_arr.include?(option)
