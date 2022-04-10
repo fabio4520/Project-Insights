@@ -113,9 +113,20 @@ class Insight
   end
   
   def sum_sales
+
+    table = Terminal::Table.new
+    table.title = "Top 10.colorize(green) restaurants by sales"
+    table.headings = result.fields
+    table.rows = result.values
+    puts table
   end
 
   def expense
+    table = Terminal::Table.new
+    table.title = "Top 10.colorize(green) restaurants by average expense per user "
+    table.headings = result.fields
+    table.rows = result.values
+    puts table
   end
 
   def average
@@ -133,7 +144,7 @@ class Insight
       JOIN prices AS p ON d.id = p.dish_id
       group by r.name order by total_sales #{order};;
     ])
-    title = "Total Sales of all restaurants group by month"
+    title = "Total Sales by month"
     print_table(title, result.fields, result.values)
   end
 
@@ -145,7 +156,7 @@ class Insight
       JOIN prices AS p ON d.id = p.dish_id
       GROUP BY d.name;
     ])
-    title = "Restaurants with the lower price for each dish"
+    title = "Best price for.colorize(blue) dish"
     print_table(title, result.fields, result.values)
   end
 
