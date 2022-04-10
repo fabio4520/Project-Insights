@@ -6,18 +6,18 @@ DB = PG.connect(dbname: "insights")
 
 def insert(table, data, unique_column = nil)
   entity = nil
-  entity = find(table, unique_column, data[unique_column]) if (unique_column)
-  entity ||=  DB.exec(%[INSERT INTO #{table} (#{data.keys.join(', ')})
-    VALUES (#{data.values.map { |value| "'#{value.gsub("'","''")}'"}.join(", ")})
+  entity = find(table, unique_column, data[unique_column]) if unique_column
+  entity ||= DB.exec(%[INSERT INTO #{table} (#{data.keys.join(', ')})
+    VALUES (#{data.values.map { |value| "'#{value.gsub("'", "''")}'" }.join(', ')})
     RETURNING *;]).first
   entity
 end
 
 def find(table, column, value)
-  DB.exec(%[
-    SELECT * FROM #{table} 
-    WHERE #{column} = '#{value.gsub("'","''")}'; 
-    ]).first
+  DB.exec(%(
+    SELECT * FROM #{table}
+    WHERE #{column} = '#{value.gsub("'", "''")}';
+    )).first
 end
 
 # for each row to books
@@ -40,7 +40,7 @@ CSV.foreach("data.csv", headers: true) do |row|
     "address" => row["address"]
   }
   restaurant = insert("restaurants", restaurants_data, "restaurant_name")
-  
+
   # DISH
   dishes_data = {
     "dish_name" => row["dish"],
@@ -48,8 +48,8 @@ CSV.foreach("data.csv", headers: true) do |row|
     "id_restaurant" => restaurant["id"]
   }
   dishes = insert("dishes", dishes_data)
-  
-  # CLIENT_RESTAURANT  
+
+  # CLIENT_RESTAURANT
   restaurants_clients_data = {
     "visit_date" => row["visit_date"],
     "client_id" => client["id"],
@@ -57,5 +57,4 @@ CSV.foreach("data.csv", headers: true) do |row|
     "restaurant_id" => restaurant["id"]
   }
   insert("restaurants_clients", restaurants_clients_data)
-
 end
