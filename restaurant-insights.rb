@@ -59,6 +59,7 @@ class Insight
     puts "Pick a number from the list and an [option] if necessary"
   end
 
+  
 
   def validate_input(param, options_arr)
     column, option = param.split("=")
@@ -77,7 +78,7 @@ class Insight
     table.rows = rows
     puts table
   end
-  
+
 end
 
 app =Insight.new
