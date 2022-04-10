@@ -1,24 +1,22 @@
 require "colorize"
 require "pg"
 require "terminal-table"
-require "pg"
 
 # require_relative "insert_data"
 
 class Insight
-
   def initialize
     @db = PG.connect(dbname: "insights")
   end
 
   def start
     print_welcome
-    
+
     action = ""
     until action == "exit"
       print_menu
       print "> "
-      action , param = gets.chomp.split
+      action, param = gets.chomp.split
       case action
       when "1" then list_restaurants(param)
       when "2" then unique_dishes
@@ -31,13 +29,14 @@ class Insight
       when "9" then list_dishes
       when "10" then fav_dish(param)
       when "menu" then print_menu
-        print "> "
-        action , param = gets.chomp.split
+                       print "> "
+                       action, param = gets.chomp.split
       end
     end
   end
 
   private
+
   def print_welcome
     puts "Welcome to the Restaurants Insights!"
     puts "Write 'menu'.red at any moment to print the menu again and 'quit'.red to exit."
@@ -54,7 +53,7 @@ class Insight
     puts "7..green The average consumer expense group by [group=[age | gender | occupation | nationality]]"
     puts "8..green The total sales of all the restaurants group by month [order=[asc | desc]]"
     puts "9...green The list of dishes and the restaurant where you can find.yellow it at a lower price."
-    puts "10..green The favorite dish for.blue [age=number | gender=string | occupation=string | nationality=string]" 
+    puts "10..green The favorite dish for.blue [age=number | gender=string | occupation=string | nationality=string]"
     puts "---"
     puts "Pick a number from the list and an [option] if.blue necessary"
   end
@@ -62,11 +61,11 @@ class Insight
   def list_restaurants(param)
     value = nil
     column, value = param.split("=") unless param.nil?
-    querie1 = %[SELECT r.restaurant_name, r.category, r.city FROM restaurants AS r;]
-    querie2 = %[
-      SELECT r.restaurant_name, r.category, r.city FROM restaurants AS r 
+    querie1 = %(SELECT r.restaurant_name, r.category, r.city FROM restaurants AS r;)
+    querie2 = %(
+      SELECT r.restaurant_name, r.category, r.city FROM restaurants AS r
       WHERE #{column} = '#{value}';
-    ]
+    )
     result = @db.exec(
       value.nil? ? querie1 : querie2
     )
@@ -75,20 +74,18 @@ class Insight
   end
 
   def unique_dishes
-    result = @db.exec(%[
+    result = @db.exec(%(
       SELECT d.dish_name FROM dishes as d group by d.dish_name;
-    ])
+    ))
     title = "List of dishes"
     print_table(title, result.fields, result.values)
   end
 
   def distribution(param)
-    # param: group=value
-    # 3. Number and distribution (%) of clients by [group=[age | gender | occupation | nationality]]
-    _group, value = validate_input(param, ["age","gender","occupation","nationality"])
+    _group, value = validate_input(param, ["age", "gender", "occupation", "nationality"])
     result = @db.exec(%[
-      SELECT #{value}, 
-      COUNT(#{value}), 
+      SELECT #{value},
+      COUNT(#{value}),
       CONCAT( ROUND(( COUNT(#{value}) * 100.0 / (SELECT COUNT(*) FROM clients)),2), ' % ')
       FROM clients
       GROUP BY #{value} ORDER BY #{value} ASC;
@@ -98,8 +95,7 @@ class Insight
   end
 
   def visitors
-
-    result = @db.exec (%[
+    result = @db.exec(%[
       SELECT r.restaurant_name, COUNT(client_id) AS Visitors FROM restaurants_clients AS rc
       JOIN restaurants AS r ON r.id = rc.restaurant_id
       GROUP BY r.restaurant_name ORDER BY Visitors DESC LIMIT 10;
@@ -107,9 +103,9 @@ class Insight
     title = " Top 10 restaurants by visitors"
     print_table(title, result.fields, result.values)
   end
-  
+
   def sum_sales
-    result = @db.exec (%[
+    result = @db.exec(%[
       SELECT r.restaurant_name, sum(d.price) FROM restaurants_clients AS rc
       JOIN restaurants AS r ON r.id = rc.restaurant_id
       JOIN dishes AS d ON rc.dish_id = d.id
@@ -131,11 +127,10 @@ class Insight
     ])
     title = "Top 10 restaurants by average expense per user"
     print_table(title, result.fields, result.values)
-
   end
 
   def average(param)
-    _group, value = validate_input(param, ["age","gender","occupation","nationality"])
+    _group, value = validate_input(param, ["age", "gender", "occupation", "nationality"])
     result = @db.exec(%[
       SELECT #{value}, round(avg(d.price), 2) AS avg_expense FROM clients AS c
       JOIN restaurants_clients AS rc ON rc.client_id = c.id
@@ -148,7 +143,7 @@ class Insight
 
   def total_sales(param)
     # param = order=asc
-    _column, order = validate_input(param,["asc", "desc"])
+    _column, order = validate_input(param, ["asc", "desc"])
 
     result = @db.exec(%[
       SELECT TO_CHAR(rc.visit_date, 'Month') AS Month, sum(d.price) FROM restaurants_clients AS rc
@@ -172,14 +167,27 @@ class Insight
     print_table(title, result.fields, result.values)
   end
 
+  def fav_dish(param)
+    column, value = param.split("=")
+    result = @db.exec(%[
+      select #{column}, d.dish_name, count(*) as count from dishes as d
+      join restaurants_clients as rc on d.id = rc.dish_id
+      join clients as c on c.id = rc.client_id
+      where #{column} = '#{value}'
+      group by #{column}, d.dish_name order by count desc limit 1;
+    ])
+    title = "Favorite dish for #{column}=#{value}"
+    print_table(title, result.fields, result.values)
+  end
+
   def validate_input(param, options_arr)
     column, option = param.split("=")
     until options_arr.include?(option)
-      puts "#{column}=#{options_arr.join(" | ")}"
+      puts "#{column}=#{options_arr.join(' | ')}"
       print "> "
       column, option = gets.chomp.split("=")
     end
-    return column, option
+    [column, option]
   end
 
   def print_table(title, headings, rows)
@@ -189,8 +197,7 @@ class Insight
     table.rows = rows
     puts table
   end
-
 end
 
-app =Insight.new
+app = Insight.new
 app.start
