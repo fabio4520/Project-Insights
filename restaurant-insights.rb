@@ -40,24 +40,23 @@ class Insight
   private
   def print_welcome
     puts "Welcome to the Restaurants Insights!"
-    # puts "Write 'menu'(:orange) at any moment to print the menu again and 'quit'(:orange) to exit."
-    puts "Write" + " menu ".red + "at any moment to print the menu again and" + " quit ".red + "to exit."
+    puts "Write 'menu'.red at any moment to print the menu again and 'quit'.red to exit."
   end
 
   def print_menu
     puts "---"
-    puts "1. List of restaurants included in the research filter by ['' | category=string | city=string]"
-    puts "2. List of unique dishes included in the research"
-    puts "3. Number and distribution (%) of clients by [group=[age | gender | occupation | nationality]]"
-    puts "4. Top 10 restaurants by the number of visitors."
-    puts "5. Top 10 restaurants by the sum of sales."
-    puts "6. Top 10 restaurants by the average expense of their clients."
-    puts "7. The average consumer expense group by [group=[age | gender | occupation | nationality]]"
-    puts "8. The total sales of all the restaurants group by month [order=[asc | desc]]"
-    puts "9. The list of dishes and the restaurant where you can find it at a lower price."
-    puts "10. The favorite dish for [age=number | gender=string | occupation=string | nationality=string]" 
+    puts "1..green List of restaurants included in.blue the research filter by ['' | category=string | city=string]"
+    puts "2..green List of unique dishes included in.blue the research"
+    puts "3..green Number and distribution (%) of clients by [group=[age | gender | occupation | nationality]]"
+    puts "4...green Top 10.green restaurants by the number of visitors."
+    puts "5..green Top 10.green restaurants by the sum.yellow of sales."
+    puts "6..green Top 10.green restaurants by the average expense of their clients."
+    puts "7..green The average consumer expense group by [group=[age | gender | occupation | nationality]]"
+    puts "8..green The total sales of all the restaurants group by month [order=[asc | desc]]"
+    puts "9...green The list of dishes and the restaurant where you can find.yellow it at a lower price."
+    puts "10..green The favorite dish for.blue [age=number | gender=string | occupation=string | nationality=string]" 
     puts "---"
-    puts "Pick a number from the list and an [option] if necessary"
+    puts "Pick a number from the list and an [option] if.blue necessary"
   end
 
   def list_restaurants(param)
@@ -99,6 +98,7 @@ class Insight
   end
 
   def visitors
+
     result = @db.exec (%[
       SELECT r.restaurant_name, COUNT(client_id) AS Visitors FROM restaurants_clients AS rc
       JOIN restaurants AS r ON r.id = rc.restaurant_id
@@ -131,6 +131,7 @@ class Insight
     ])
     title = "Top 10 restaurants by average expense per user"
     print_table(title, result.fields, result.values)
+
   end
 
   def average(param)
@@ -154,7 +155,7 @@ class Insight
       JOIN dishes AS d ON d.id = rc.dish_id
       GROUP BY Month ORDER BY Month #{order};
     ])
-    title = "Total Sales of all restaurants group by month"
+    title = "Total Sales by month"
     print_table(title, result.fields, result.values)
   end
 
@@ -167,7 +168,7 @@ class Insight
       JOIN restaurants AS r ON r.id = rc.restaurant_id
       GROUP BY d.dish_name, r.restaurant_name;
     ])
-    title = "Restaurants with the lower price for each dish"
+    title = "Best price for.blue dish"
     print_table(title, result.fields, result.values)
   end
 
