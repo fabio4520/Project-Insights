@@ -133,17 +133,30 @@ class Insight
   end
 
   def total_sales(param)
-  # param = order=asc
-  _column, order = validate_input(param,["asc", "desc"])
+    # param = order=asc
+    _column, order = validate_input(param,["asc", "desc"])
 
-  result = @db.exec(%[
-    SELECT TO_CHAR(rc.visit_date, 'Month') AS Month, sum(d.price) FROM restaurants_clients AS rc
-    JOIN dishes AS d ON d.id = rc.dish_id
-    GROUP BY Month ORDER BY Month #{order};
-  ])
-  title = "Total Sales of all restaurants group by month"
-  print_table(title, result.fields, result.values)
-end
+    result = @db.exec(%[
+      SELECT TO_CHAR(rc.visit_date, 'Month') AS Month, sum(d.price) FROM restaurants_clients AS rc
+      JOIN dishes AS d ON d.id = rc.dish_id
+      GROUP BY Month ORDER BY Month #{order};
+    ])
+    title = "Total Sales of all restaurants group by month"
+    print_table(title, result.fields, result.values)
+  end
+
+  def list_dishes
+    #  I can see the list of dishes and the restaurant where you can find it at a lower price.
+    result = @db.exec(%[
+      SELECT DISTINCT ON (d.dish_name) d.dish_name, r.restaurant_name, min(d.price) as lowest_price
+      FROM restaurants_clients AS rc
+      JOIN dishes AS d ON d.id = rc.dish_id
+      JOIN restaurants AS r ON r.id = rc.restaurant_id
+      GROUP BY d.dish_name, r.restaurant_name;
+    ])
+    title = "Restaurants with the lower price for each dish"
+    print_table(title, result.fields, result.values)
+  end
 
   def validate_input(param, options_arr)
     column, option = param.split("=")
