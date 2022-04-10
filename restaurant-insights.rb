@@ -40,7 +40,8 @@ class Insight
   private
   def print_welcome
     puts "Welcome to the Restaurants Insights!"
-    puts "Write 'menu'(:orange) at any moment to print the menu again and 'quit'(:orange) to exit."
+    # puts "Write 'menu'(:orange) at any moment to print the menu again and 'quit'(:orange) to exit."
+    puts "Write" + " menu ".red + "at any moment to print the menu again and" + " quit ".red + "to exit."
   end
 
   def print_menu
@@ -96,7 +97,7 @@ class Insight
     title = "Number and distribution of Users by #{value}"
     print_table(title, result.fields, result.values)
   end
-  
+
   def visitors
     result = @db. exec (%[
       SELECT r.restaurant_name, COUNT(client_id) AS Visitors FROM restaurants_clients AS rc
