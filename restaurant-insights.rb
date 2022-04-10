@@ -81,6 +81,21 @@ class Insight
     title = "List of dishes"
     print_table(title, result.fields, result.values)
   end
+
+  def distribution(param)
+    # param: group=value
+    # 3. Number and distribution (%) of clients by [group=[age | gender | occupation | nationality]]
+    _group, value = validate_input(param, ["age","gender","occupation","nationality"])
+    result = @db.exec(%[
+      SELECT #{value}, 
+      COUNT(#{value}), 
+      CONCAT( ROUND(( COUNT(#{value}) * 100.0 / (select COUNT(*) from clients)),2), ' % ')
+      FROM clients
+      GROUP BY #{value} ORDER BY #{value} ASC;
+    ])
+    title = "Number and distribution of Users by #{value}"
+    print_table(title, result.fields, result.values)
+  end
   
   def validate_input(param, options_arr)
     column, option = param.split("=")
