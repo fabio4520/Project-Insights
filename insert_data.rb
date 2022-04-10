@@ -1,9 +1,4 @@
 require "pg"
-<<<<<<< HEAD
-
-db = PG.connect(dbname: "insight")
-
-=======
 require "csv"
 
 # Append to connect to DB
@@ -11,13 +6,10 @@ DB = PG.connect(dbname: "insights")
 
 def insert(table, data, unique_column = nil)
   entity = nil
-
   entity = find(table, unique_column, data[unique_column]) if (unique_column)
-
   entity ||=  DB.exec(%[INSERT INTO #{table} (#{data.keys.join(', ')})
-              VALUES (#{data.values.map { |value| "'#{value.gsub("'","''")}'"}.join(", ")})
-              RETURNING *;]).first
-
+    VALUES (#{data.values.map { |value| "'#{value.gsub("'","''")}'"}.join(", ")})
+    RETURNING *;]).first
   entity
 end
 
@@ -30,56 +22,40 @@ end
 
 # for each row to books
 CSV.foreach("data.csv", headers: true) do |row|
+  # CLIENT
   client_data = {
-    "name" => row["client_name"],
+    "client_name" => row["client_name"],
     "age" => row["age"],
     "gender" => row["gender"],
     "occupation" => row["occupation"],
     "nationality" => row["nationality"]
   }
-  client = insert("clients", client_data, "name")
 
+  client = insert("clients", client_data, "client_name")
+  # RESTAURANT
   restaurants_data = {
-    "name" => row["restaurant_name"],
+    "restaurant_name" => row["restaurant_name"],
     "category" => row["category"],
     "city" => row["city"],
-    "adress" => row["address"]
+    "address" => row["address"]
   }
-  restaurant = insert("restaurants", restaurants_data, "name")
-
+  restaurant = insert("restaurants", restaurants_data, "restaurant_name")
+  
+  # DISH
   dishes_data = {
-    "name" => row["dish"]
+    "dish_name" => row["dish"],
+    "price" => row["price"],
+    "id_restaurant" => restaurant["id"]
   }
   dishes = insert("dishes", dishes_data)
-
-  prices_data = {
-    "price_number" => row["price"],
-    "dish_id" => dishes["id"]
-  }
-  prices = insert("prices", prices_data)
-
-  visit_date = {
+  
+  # CLIENT_RESTAURANT  
+  restaurants_clients_data = {
     "visit_date" => row["visit_date"],
-    "client_id" => client["id"]
-  }
-  visit = insert("visit_dates", visit_date)
-
-  restaurants_clients_data = {
-    "restaurant_id" => restaurant["id"],
-    "client_id" => client["id"]
+    "client_id" => client["id"],
+    "dish_id" => dishes["id"],
+    "restaurant_id" => restaurant["id"]
   }
   insert("restaurants_clients", restaurants_clients_data)
 
-  restaurants_clients_data = {
-    "restaurant_id" => restaurant["id"],
-    "client_id" => client["id"]
-  }
-  insert("restaurants_clients", restaurants_clients_data)
-
-  restaurants_dishes_data = {
-    "restaurant_id" => restaurant["id"],
-    "dish_id" => dishes["id"]
-  }
-  insert("restaurants_dishes", restaurants_dishes_data)
 end
->>>>>>> 5c416ed759dfae29d01f6d80deb0c82ebb976af1

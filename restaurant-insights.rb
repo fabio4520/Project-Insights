@@ -26,13 +26,14 @@ class Insight
       when "4" then visitors
       when "5" then sum_sales
       when "6" then expense
-      when "7" then average
+      when "7" then average(param)
       when "8" then total_sales(param)
       when "9" then list_dishes
       when "10" then fav_dish(param)
       when "menu" then print_menu
         print "> "
         action , param = gets.chomp.split
+      end
     end
   end
 
@@ -61,9 +62,9 @@ class Insight
   def list_restaurants(param)
     value = nil
     column, value = param.split("=") unless param.nil?
-    querie1 = %[SELECT r.name, r.category, r.city FROM restaurants AS r;]
+    querie1 = %[SELECT r.restaurant_name, r.category, r.city FROM restaurants AS r;]
     querie2 = %[
-      SELECT r.name, r.category, r.city FROM restaurants AS r 
+      SELECT r.restaurant_name, r.category, r.city FROM restaurants AS r 
       WHERE #{column} = '#{value}';
     ]
     result = @db.exec(
@@ -75,7 +76,7 @@ class Insight
 
   def unique_dishes
     result = @db.exec(%[
-      SELECT d.name FROM dishes as d group by d.name;
+      SELECT d.dish_name FROM dishes as d group by d.dish_name;
     ])
     title = "List of dishes"
     print_table(title, result.fields, result.values)
@@ -83,53 +84,66 @@ class Insight
 
   def distribution(param)
     # param: group=value
+    # 3. Number and distribution (%) of clients by [group=[age | gender | occupation | nationality]]
     _group, value = validate_input(param, ["age","gender","occupation","nationality"])
     result = @db.exec(%[
       SELECT #{value}, 
       COUNT(#{value}), 
-      CONCAT( ROUND(( COUNT(#{value}) * 100.0 / (select COUNT(*) from clients)),2), ' % ')
+      CONCAT( ROUND(( COUNT(#{value}) * 100.0 / (SELECT COUNT(*) FROM clients)),2), ' % ')
       FROM clients
       GROUP BY #{value} ORDER BY #{value} ASC;
     ])
-
     title = "Number and distribution of Users by #{value}"
     print_table(title, result.fields, result.values)
   end
 
   def visitors
-    result = @db. exec (%[SELECT r.name, COUNT(client_id) as visitors
-      FROM public.restaurants_clients
-      JOIN public.restaurants as r ON r.id = restaurant_id
-      GROUP BY r.name
-      ORDER BY COUNT(client_id) DESC
-      LIMIT 10;
-    ])
 
-    table = Terminal::Table.new
-    table.title = "Top 10.green restaurants by visitors"
-    table.headings = result.fields
-    table.rows = result.values
-    puts table
+    result = @db.exec (%[
+      SELECT r.restaurant_name, COUNT(client_id) AS Visitors FROM restaurants_clients AS rc
+      JOIN restaurants AS r ON r.id = rc.restaurant_id
+      GROUP BY r.restaurant_name ORDER BY Visitors DESC LIMIT 10;
+      ])
+    title = " Top 10 restaurants by visitors"
+    print_table(title, result.fields, result.values)
   end
   
   def sum_sales
+    result = @db.exec (%[
+      SELECT r.restaurant_name, sum(d.price) FROM restaurants_clients AS rc
+      JOIN restaurants AS r ON r.id = rc.restaurant_id
+      JOIN dishes AS d ON rc.dish_id = d.id
+      GROUP BY r.restaurant_name ORDER BY sum(d.price) DESC;
+    ])
 
-    table = Terminal::Table.new
-    table.title = "Top 10.colorize(green) restaurants by sales"
-    table.headings = result.fields
-    table.rows = result.values
-    puts table
+    title = "Top 10 restaurants by sales"
+    print_table(title, result.fields, result.values)
   end
 
   def expense
-    table = Terminal::Table.new
-    table.title = "Top 10.colorize(green) restaurants by average expense per user "
-    table.headings = result.fields
-    table.rows = result.values
-    puts table
+    result = @db.exec(%[
+      SELECT r.restaurant_name, ROUND(AVG(price),2) AS avg_expenses
+      FROM restaurants AS r
+      JOIN restaurants_clients AS rc on r.id = rc.restaurant_id
+      JOIN dishes AS d on rc.id = d.id_restaurant
+      GROUP BY r.restaurant_name ORDER BY avg_expenses DESC
+      LIMIT 10;
+    ])
+    title = "Top 10 restaurants by average expense per user"
+    print_table(title, result.fields, result.values)
+
   end
 
-  def average
+  def average(param)
+    _group, value = validate_input(param, ["age","gender","occupation","nationality"])
+    result = @db.exec(%[
+      SELECT #{value}, round(avg(d.price), 2) AS avg_expense FROM clients AS c
+      JOIN restaurants_clients AS rc ON rc.client_id = c.id
+      JOIN dishes AS d ON d.id = rc.dish_id
+      GROUP BY #{value} ORDER BY #{value} ASC;
+    ])
+    title = "Average consumer expenses"
+    print_table(title, result.fields, result.values)
   end
 
   def total_sales(param)
@@ -137,57 +151,28 @@ class Insight
     _column, order = validate_input(param,["asc", "desc"])
 
     result = @db.exec(%[
-      SELECT CONCAT('$',SUM(p.price_number)) total_sales, r.name AS restaurant_name 
-      FROM restaurants AS r
-      JOIN restaurants_dishes AS rd ON r.id = rd.restaurant_id
-      JOIN dishes AS d ON d.id = rd.dish_id
-      JOIN prices AS p ON d.id = p.dish_id
-      group by r.name order by total_sales #{order};;
+      SELECT TO_CHAR(rc.visit_date, 'Month') AS Month, sum(d.price) FROM restaurants_clients AS rc
+      JOIN dishes AS d ON d.id = rc.dish_id
+      GROUP BY Month ORDER BY Month #{order};
     ])
     title = "Total Sales by month"
     print_table(title, result.fields, result.values)
   end
 
   def list_dishes
+    #  I can see the list of dishes and the restaurant where you can find it at a lower price.
     result = @db.exec(%[
-      SELECT d.name, MIN(p.price_number) FROM dishes AS d
-      JOIN restaurants_dishes AS rd ON rd.dish_id = d.id
-      JOIN restaurants AS r ON r.id = rd.restaurant_id
-      JOIN prices AS p ON d.id = p.dish_id
-      GROUP BY d.name;
+      SELECT DISTINCT ON (d.dish_name) d.dish_name, r.restaurant_name, min(d.price) as lowest_price
+      FROM restaurants_clients AS rc
+      JOIN dishes AS d ON d.id = rc.dish_id
+      JOIN restaurants AS r ON r.id = rc.restaurant_id
+      GROUP BY d.dish_name, r.restaurant_name;
     ])
     title = "Best price for.blue dish"
     print_table(title, result.fields, result.values)
   end
 
-  def fav_dish(param)
-    column_reference = {
-      "age" => "age",
-      "gender" => "gender",
-      "occupation" => "occupation",
-      "nacionality" => "nacionality"
-    }
-    # column, value = validate_input(param, column_reference.keys)
-    column, value = param.split("=")
-
-    result = @db.exec(%[
-      SELECT #{column}, d.name AS Dish FROM clients AS c
-      LEFT JOIN restaurants_clients AS rc ON rc.client_id = c.id
-      LEFT JOIN restaurants AS r ON r.id = rc.restaurant_id
-      LEFT JOIN restaurants_dishes AS rd ON r.id = rd.restaurant_id
-      join dishes AS d ON d.id = rd.dish_id
-      WHERE #{column} = '#{value}'
-      GROUP BY #{column}, d.name
-      ORDER BY count(d.name) DESC LIMIT 1;
-    ])
-    title = "Favorite dish for #{column}=#{value}"
-    print_table(title, result.fields, result.values)
-
-  end
-
-  private
   def validate_input(param, options_arr)
-    # param = order=asc
     column, option = param.split("=")
     until options_arr.include?(option)
       puts "#{column}=#{options_arr.join(" | ")}"
