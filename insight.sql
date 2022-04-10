@@ -16,7 +16,7 @@ CREATE TABLE restaurants (
   restaurant_name VARCHAR NOT NULL,
   category VARCHAR,
   city VARCHAR,
-  adress VARCHAR
+  address VARCHAR
 );
 
 DROP TABLE IF EXISTS dishes;

@@ -6,13 +6,10 @@ DB = PG.connect(dbname: "insights")
 
 def insert(table, data, unique_column = nil)
   entity = nil
-
   entity = find(table, unique_column, data[unique_column]) if (unique_column)
-
   entity ||=  DB.exec(%[INSERT INTO #{table} (#{data.keys.join(', ')})
-              VALUES (#{data.values.map { |value| "'#{value.gsub("'","''")}'"}.join(", ")})
-              RETURNING *;]).first
-
+    VALUES (#{data.values.map { |value| "'#{value.gsub("'","''")}'"}.join(", ")})
+    RETURNING *;]).first
   entity
 end
 
@@ -33,31 +30,32 @@ CSV.foreach("data.csv", headers: true) do |row|
     "occupation" => row["occupation"],
     "nationality" => row["nationality"]
   }
-  client = insert("clients", client_data, "name")
+
+  client = insert("clients", client_data, "client_name")
   # RESTAURANT
   restaurants_data = {
     "restaurant_name" => row["restaurant_name"],
     "category" => row["category"],
     "city" => row["city"],
-    "adress" => row["address"]
+    "address" => row["address"]
   }
-  restaurant = insert("restaurants", restaurants_data, "name")
+  restaurant = insert("restaurants", restaurants_data, "restaurant_name")
   
   # DISH
   dishes_data = {
-    "name" => row["dish"],
+    "dish_name" => row["dish"],
     "price" => row["price"],
     "id_restaurant" => restaurant["id"]
   }
-  dishes = insert("dishes", dishes_data)
+  dishes = insert("dishes", dishes_data, "dish_name")
   
   # CLIENT_RESTAURANT  
   restaurants_clients_data = {
     "visit_date" => row["visit_date"],
-    "restaurant_id" => restaurant["id"],
     "client_id" => client["id"],
-    "dish_id" => dishes["id"]
+    "dish_id" => dishes["id"],
+    "restaurant_id" => restaurant["id"]
   }
-  insert("restaurants_clients", restaurants_clients_data)
+  insert("restaurants_clients", restaurants_clients_data, "visit_date")
 
 end
