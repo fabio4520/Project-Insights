@@ -59,7 +59,20 @@ class Insight
     puts "Pick a number from the list and an [option] if necessary"
   end
 
-  
+  def list_restaurants(param)
+    value = nil
+    column, value = param.split("=") unless param.nil?
+    querie1 = %[SELECT r.restaurant_name, r.category, r.city FROM restaurants AS r;]
+    querie2 = %[
+      SELECT r.restaurant_name, r.category, r.city FROM restaurants AS r 
+      WHERE #{column} = '#{value}';
+    ]
+    result = @db.exec(
+      value.nil? ? querie1 : querie2
+    )
+    title = "List of restaurants"
+    print_table(title, result.fields, result.values)
+  end
 
   def validate_input(param, options_arr)
     column, option = param.split("=")
