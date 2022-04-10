@@ -74,6 +74,14 @@ class Insight
     print_table(title, result.fields, result.values)
   end
 
+  def unique_dishes
+    result = @db.exec(%[
+      SELECT d.dish_name FROM dishes as d group by d.dish_name;
+    ])
+    title = "List of dishes"
+    print_table(title, result.fields, result.values)
+  end
+  
   def validate_input(param, options_arr)
     column, option = param.split("=")
     until options_arr.include?(option)
