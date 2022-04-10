@@ -110,27 +110,40 @@ class Insight
   
   def sum_sales
     result = @db. exec (%[
-      select r.restaurant_name, sum(d.price) from restaurants_clients as rc
-      join restaurants as r on r.id = rc.restaurant_id
-      join dishes as d on rc.dish_id = d.id
-      group by r.restaurant_name order by sum(d.price) DESC;
+      SELECT r.restaurant_name, sum(d.price) FROM restaurants_clients AS rc
+      JOIN restaurants AS r ON r.id = rc.restaurant_id
+      JOIN dishes AS d ON rc.dish_id = d.id
+      GROUP BY r.restaurant_name ORDER BY sum(d.price) DESC;
     ])
 
     title = "Top 10 restaurants by sales"
     print_table(title, result.fields, result.values)
   end
-  
+
   def average(param)
     _group, value = validate_input(param, ["age","gender","occupation","nationality"])
     result = @db.exec(%[
-      select #{value}, round(avg(d.price), 2) as avg_expense from clients as c
-      join restaurants_clients as rc on rc.client_id = c.id
-      join dishes as d on d.id = rc.dish_id
-      group by #{value} order by #{value} asc;
+      SELECT #{value}, round(avg(d.price), 2) AS avg_expense FROM clients AS c
+      JOIN restaurants_clients AS rc ON rc.client_id = c.id
+      JOIN dishes AS d ON d.id = rc.dish_id
+      GROUP BY #{value} ORDER BY #{value} ASC;
     ])
     title = "Average consumer expenses"
     print_table(title, result.fields, result.values)
   end
+
+  def total_sales(param)
+  # param = order=asc
+  _column, order = validate_input(param,["asc", "desc"])
+
+  result = @db.exec(%[
+    SELECT TO_CHAR(rc.visit_date, 'Month') AS Month, sum(d.price) FROM restaurants_clients AS rc
+    JOIN dishes AS d ON d.id = rc.dish_id
+    GROUP BY Month ORDER BY Month #{order};
+  ])
+  title = "Total Sales of all restaurants group by month"
+  print_table(title, result.fields, result.values)
+end
 
   def validate_input(param, options_arr)
     column, option = param.split("=")
