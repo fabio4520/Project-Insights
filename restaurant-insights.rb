@@ -59,6 +59,25 @@ class Insight
     puts "Pick a number from the list and an [option] if necessary"
   end
 
+
+  def validate_input(param, options_arr)
+    column, option = param.split("=")
+    until options_arr.include?(option)
+      puts "#{column}=#{options_arr.join(" | ")}"
+      print "> "
+      column, option = gets.chomp.split("=")
+    end
+    return column, option
+  end
+
+  def print_table(title, headings, rows)
+    table = Terminal::Table.new
+    table.title = title
+    table.headings = headings
+    table.rows = rows
+    puts table
+  end
+  
 end
 
 app =Insight.new
