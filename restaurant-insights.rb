@@ -99,7 +99,7 @@ class Insight
   end
 
   def visitors
-    result = @db. exec (%[
+    result = @db.exec (%[
       SELECT r.restaurant_name, COUNT(client_id) AS Visitors FROM restaurants_clients AS rc
       JOIN restaurants AS r ON r.id = rc.restaurant_id
       GROUP BY r.restaurant_name ORDER BY Visitors DESC LIMIT 10;
@@ -109,7 +109,7 @@ class Insight
   end
   
   def sum_sales
-    result = @db. exec (%[
+    result = @db.exec (%[
       SELECT r.restaurant_name, sum(d.price) FROM restaurants_clients AS rc
       JOIN restaurants AS r ON r.id = rc.restaurant_id
       JOIN dishes AS d ON rc.dish_id = d.id
@@ -117,6 +117,19 @@ class Insight
     ])
 
     title = "Top 10 restaurants by sales"
+    print_table(title, result.fields, result.values)
+  end
+
+  def expense
+    result = @db.exec(%[
+      SELECT r.restaurant_name, ROUND(AVG(price),2) AS avg_expenses
+      FROM restaurants AS r
+      JOIN restaurants_clients AS rc on r.id = rc.restaurant_id
+      JOIN dishes AS d on rc.id = d.id_restaurant
+      GROUP BY r.restaurant_name ORDER BY avg_expenses DESC
+      LIMIT 10;
+    ])
+    title = "Top 10 restaurants by average expense per user"
     print_table(title, result.fields, result.values)
   end
 
